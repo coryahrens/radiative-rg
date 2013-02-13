@@ -75,7 +75,7 @@ Cory Ahrens
 \end_layout
 
 \begin_layout Abstract
-Numerical RG method applied to nonlinear radiative transport problem
+Set of working notes on RG problem
 \end_layout
 
 \begin_layout Address
@@ -99,8 +99,7 @@ Introduction
 \end_layout
 
 \begin_layout Standard
-What the problem is and why I'm looking at it.
- What has already been done.
+Looking at long-time asymptotics of nonlinear radiative transfer problem
 \end_layout
 
 \begin_layout Section
@@ -108,7 +107,38 @@ Preliminaries
 \end_layout
 
 \begin_layout Standard
-Setup of problem
+We start with the grey, 1D Cartesian geometry thermal radiative transfer
+ equations, neglecting scattering:
+\begin_inset Formula 
+\begin{align}
+\frac{1}{c}\frac{\partial I}{\partial t}+\mu\frac{\partial I}{\partial z}+\sigma_{a}I & =\frac{\sigma_{a}ac}{2}T^{4}\nonumber \\
+c_{v}\frac{\partial T}{\partial t} & =\sigma_{a}\left(\int_{-1}^{1}Id\mu'-acT^{4}\right),\label{eq:grey-eqs}
+\end{align}
+
+\end_inset
+
+where 
+\begin_inset Formula $I=I\left(z,\mu,t\right)$
+\end_inset
+
+ is the specific intensity of radiation, 
+\begin_inset Formula $T=T\left(z,t\right)$
+\end_inset
+
+ is the material temperature, 
+\begin_inset Formula $c$
+\end_inset
+
+ is the speed of light, 
+\begin_inset Formula $\sigma_{a}$
+\end_inset
+
+ is the absorption opacity and 
+\begin_inset Formula $a$
+\end_inset
+
+ is the radiation constant.
+ 
 \end_layout
 
 \begin_layout Section
@@ -116,7 +146,57 @@ Renormalization group
 \end_layout
 
 \begin_layout Standard
-Apply RG to problem from 2
+To apply the RG method to Eqs.(
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:grey-eqs"
+
+\end_inset
+
+), let 
+\begin_inset Formula $L>1$
+\end_inset
+
+ be given and set
+\begin_inset Formula 
+\begin{align}
+I\left(z,\mu,t\right) & =L^{\gamma_{1}}I_{L}\left(L^{\alpha_{1}}z,\mu,L^{\beta_{1}}t\right)\nonumber \\
+T\left(z,t\right) & =L^{\gamma_{2}}T_{L}\left(L^{\alpha_{2}}z,\mu,L^{\beta_{2}}t\right)\label{eq:scaling}\\
+c_{v} & =c_{v}^{0}T^{n}\nonumber \\
+\sigma_{a} & =\sigma_{a}^{0}T^{-m},\nonumber 
+\end{align}
+
+\end_inset
+
+where 
+\begin_inset Formula $\gamma_{1}$
+\end_inset
+
+, 
+\begin_inset Formula $\alpha_{1}$
+\end_inset
+
+, 
+\begin_inset Formula $\beta_{1}$
+\end_inset
+
+,
+\begin_inset Formula $\gamma_{2}$
+\end_inset
+
+, 
+\begin_inset Formula $\alpha_{2}$
+\end_inset
+
+, 
+\begin_inset Formula $\beta_{2}$
+\end_inset
+
+ will be determined and the positive integers 
+\begin_inset Formula $n,m$
+\end_inset
+
+ are given.
 \end_layout
 
 \begin_layout Section
