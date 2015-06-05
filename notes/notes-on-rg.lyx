@@ -2,7 +2,7 @@
 \lyxformat 474
 \begin_document
 \begin_header
-\textclass elsarticle
+\textclass revtex4
 \use_default_options true
 \begin_modules
 theorems-ams
@@ -99,10 +99,6 @@ Colorado School of Mines
 Golden, CO 80401-1887
 \end_layout
 
-\begin_layout Email
-cahrens@mines.edu
-\end_layout
-
 \begin_layout Section
 Introduction
 \end_layout
@@ -117,7 +113,7 @@ Preliminaries
 
 \begin_layout Standard
 We start with the grey, 1D Cartesian geometry thermal radiative transfer
- equations, including neglecting scattering:
+ equations, including isotropic scattering:
 \begin_inset Formula 
 \begin{align}
 \frac{1}{c}\frac{\partial I}{\partial t}+\mu\frac{\partial I}{\partial z}+\sigma_{t}I & =\frac{\sigma_{s}}{2}\int_{-1}^{1}Id\mu'+\frac{\sigma_{a}ac}{2}T^{4}\nonumber \\
@@ -268,9 +264,9 @@ reference "eq:p1-eqs"
 \begin_layout Standard
 \begin_inset Formula 
 \begin{align}
-\sigma_{a}=\sigma_{a}\left(T\right) & =\frac{\sigma_{a}^{0}}{T^{n}}\nonumber \\
-\sigma_{s}=\sigma_{s}\left(T\right) & =\frac{\sigma_{s}^{0}}{T^{n}}\label{eq:model-temp-dep}\\
-c_{v}=c_{v}\left(T\right) & =c_{v}^{0}T^{m},\nonumber 
+\sigma_{a}=\sigma_{a}\left(T\right) & =\sigma_{a}^{0}\left(\frac{T_{0}}{T}\right)^{n}\nonumber \\
+\sigma_{s}=\sigma_{s}\left(T\right) & =\sigma_{s}^{0}\left(\frac{T_{0}}{T}\right)^{n}\label{eq:model-temp-dep}\\
+c_{v}=c_{v}\left(T\right) & =c_{v}^{0}\left(\frac{T}{T_{0}}\right)^{m},\nonumber 
 \end{align}
 
 \end_inset
@@ -286,12 +282,88 @@ where
  are given positive real numbers and the superscript zero denotes a constant.
 \end_layout
 
+\begin_layout Subsection
+Marshak Formulation
+\end_layout
+
+\begin_layout Standard
+Robert Marshak originally formulated the problem of the ``Marshak wave.''
+ Using physical arguments, Marshak derived the model
+\begin_inset Formula 
+\[
+\frac{\partial}{\partial t}E_{m}\left(T\right)=\nabla\cdot\left[\frac{ac}{3\sigma_{R}}\nabla T^{4}\right],
+\]
+
+\end_inset
+
+where 
+\begin_inset Formula $\sigma_{R}=\sigma_{R}\left(T\right)$
+\end_inset
+
+ is the Rosseland mean opacity and 
+\begin_inset Formula $E_{m}$
+\end_inset
+
+ is the material energy density.
+ We can write
+\begin_inset Formula 
+\[
+\frac{\partial E_{m}}{\partial t}=\frac{\partial E_{m}}{\partial T}\frac{\partial T}{\partial t}=c_{v}\frac{\partial T}{\partial t}
+\]
+
+\end_inset
+
+to write 
+\begin_inset Formula 
+\begin{equation}
+c_{v}\frac{\partial T}{\partial t}=\nabla\cdot\left[\frac{ac}{3\sigma_{R}}\nabla T^{4}\right].\label{eq:marshak-formulation}
+\end{equation}
+
+\end_inset
+
+Note that here we neglect the radiation energy density compared with the
+ material energy density.
+ That is, we assume 
+\begin_inset Formula $aT^{4}/c_{v}T\ll1$
+\end_inset
+
+.
+ Typically, scattering is neglected and one uses only the absorption opacity
+ for the Rosseland mean opacity, i.e.
+ 
+\begin_inset Formula $\sigma_{R}=\sigma_{a}$
+\end_inset
+
+, with a typical exponent of 
+\begin_inset Formula $n=3$
+\end_inset
+
+ .
+\end_layout
+
 \begin_layout Section
 Numerical Renormalization group
 \end_layout
 
 \begin_layout Standard
 Description of RG
+\end_layout
+
+\begin_layout Subsection
+Numerical Solution of nonlinear diffusion model
+\end_layout
+
+\begin_layout Standard
+Here we describe our numerical method for the solution of the nonlinear
+ diffusion equation, Eq.
+ (
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:marshak-formulation"
+
+\end_inset
+
+).
 \end_layout
 
 \begin_layout Subsection
