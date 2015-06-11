@@ -19,23 +19,21 @@ parameters["reorder_dofs_serial"] = False
 #parameters['allow_extrapolation'] = True
 
 # Create mesh and define function space
-x_r  = 25
-nx   = 500
+x_r  = 50
+nx   = 1000
 mesh = IntervalMesh(nx, 0,x_r)
 V    = FunctionSpace(mesh, 'Lagrange',1)
 
 # Define initial condition
 class fun(Expression):
     def eval(self, values, x):
-        if numpy.abs(x[0]) <= 1E-14:
-            values[0] = 1
+        if numpy.abs(x[0] - 0.5*x_r) <= 0.1*x_r:
+            values[0] = 1.0
         else:
-            values[0] = 0
+            values[0] = 0.0
 
 # Define Dirichlet conditions for x=0 boundary
-
 u_L = Constant(1)
-
 class LeftBoundary(SubDomain):
     def inside(self, x, on_boundary):
         tol = 1E-14   # tolerance for coordinate comparisons
@@ -45,9 +43,7 @@ class LeftBoundary(SubDomain):
 Gamma_0 = DirichletBC(V, u_L, LeftBoundary(),'pointwise')
 
 # Define Dirichlet conditions for x=x_r boundary
-
 u_R = Constant(0)
-
 class RightBoundary(SubDomain):
     def inside(self, x, on_boundary):
         tol = 1E-14   # tolerance for coordinate comparisons
@@ -69,8 +65,8 @@ u_1 = interpolate(fun(), V)
 
 # Define variational problem
 
-u   = TrialFunction(V)
-v   = TestFunction(V)
+u = TrialFunction(V)
+v = TestFunction(V)
 a = u*v*dx + dt*inner(nabla_grad(u), nabla_grad(v))*dx
 L = (u_1 + dt*u_1*(1.-u_1)*(1.+2.*u_1))*v*dx
 
@@ -91,7 +87,7 @@ u_init = u #save ic
 
 b   = 0.25    # rg simulation time
 dt  = 0.05    # time step
-vel = 2.       # initial guess for velocity
+vel = 2.5     # initial guess for velocity
 
 ## RG Loop ##
 for kk in range(0,10):
@@ -101,23 +97,23 @@ for kk in range(0,10):
     l        = b*vel      # distance wave front moves
     numUnits = 20.        # num units we will shift 
     delX     = l/numUnits # new delta x   
-    nx   = int(x_r/delX)  # num x steps
-    mesh2 = IntervalMesh(nx, 0,x_r)
-    V1    = FunctionSpace(mesh2, 'Lagrange',1)
+    nx       = int(x_r/delX)  # num x steps
+    mesh2    = IntervalMesh(nx, 0,x_r)
+    V1       = FunctionSpace(mesh2, 'Lagrange',1)
 
     # bc's on new mesh
     Gamma_0 = DirichletBC(V1, u_L, LeftBoundary(),'pointwise')
     Gamma_1 = DirichletBC(V1, u_R, RightBoundary(),'pointwise')
-    bcs = [Gamma_0, Gamma_1]
-
+    bcs     = [Gamma_0, Gamma_1]
+ 
     # initial condition on new mesh
     u_1 = interpolate(u_1,V1)
 
     # Define variational problem
     u   = TrialFunction(V1)
     v   = TestFunction(V1)
-    a1 = u*v*dx + dt*inner(nabla_grad(u), nabla_grad(v))*dx
-    L1 = (u_1 + dt*u_1*(1.-u_1)*(1.+2.*u_1))*v*dx
+    a1  = u*v*dx + dt*inner(nabla_grad(u), nabla_grad(v))*dx
+    L1  = (u_1 + dt*u_1*(1.-u_1)*(1.+2.*u_1))*v*dx
 
     u = Function(V1)
     t = dt
