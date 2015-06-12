@@ -20,7 +20,7 @@ parameters["reorder_dofs_serial"] = False
 nu = 2.0
 
 # Create mesh and define function space
-x_r  = 50
+x_r  = 100
 nx   = 5000
 mesh = IntervalMesh(nx, 0,x_r)
 V    = FunctionSpace(mesh, 'Lagrange',1)
@@ -57,7 +57,7 @@ bcs = [Gamma_0, Gamma_1]
 # Initial Solve (for aesthetics mostly)
 ####################################################
 
-T  = 5      # total simulation time
+T  = 5.0    # total simulation time
 dt = 0.01   # time step
 
 # Initial condition
@@ -85,17 +85,21 @@ u_init = u #save ic
 # RG Section
 ####################################################
 
-b   = 0.10    # rg simulation time
-dt  = 0.01    # time step
+b   = 0.20    # rg simulation time
+dt  = 0.02    # time step
 
 velMax = 18.0   # search interval
 velMin = 1.0
 vel = (velMax+velMin)/2. # initial guess for velocity
-f_a  = 18.4468123138 # sum of diff for vel = 1
-f_b = -9.63663662821 # sum of diff for vel = 4
+
+f_a = -0.00135292847249 # delU for vel = 1  (nu = 2)
+f_b = 0.056959928594    # delU for vel = 18 (nu = 2)
+
+#f_a = -0.012518629212   # delU for vel = 1  (nu = 0)
+#f_b = 0.428039780479    # delU for vel = 18 (nu = 0)
 
 ## RG Loop ##
-for kk in xrange(0,50):
+for kk in xrange(0,40):
     
     # Create mesh and define function space
     # given the current guess for vel
@@ -126,6 +130,10 @@ for kk in xrange(0,50):
     # store previous for comparison
     u_prev = u_1.compute_vertex_values()
 
+    # interpolate previous solution to reference grid
+    u_n = interpolate(u_1,V)
+    un_vals = u_n.compute_vertex_values()
+
     ## time loop ##
     while t <= b:
         solve(a1==L1, u, bcs)    
@@ -137,10 +145,15 @@ for kk in xrange(0,50):
     utmp = numpy.append(utmp[(numUnits-1):-1],numpy.zeros((1,numUnits)))
     u_1.vector().set_local(utmp.ravel())
 
-    f_c = numpy.sum(utmp-u_prev) # objective function
+    # interpolate solution to reference grid
+    u_np1 = interpolate(u_1,V)
+    unp1_vals = u_np1.compute_vertex_values()
+
+    # compare solutions at x = 55.
+    f_c = un_vals[2750] - unp1_vals[2750]
     
     if (velMax-velMin)/2. < 1E-6:
-        print 'Result within tolerance.'
+        print 'Search interval within tolerance.'
         print 'Velocity:', vel
         break
     elif numpy.sign(f_c) == numpy.sign(f_a):
