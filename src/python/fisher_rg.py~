@@ -90,7 +90,7 @@ dt  = 0.05    # time step
 vel = 2.0     # initial guess for velocity
 
 ## RG Loop ##
-for kk in range(0,10):
+for kk in range(0,1):
     
     # Create mesh and define function space
     # given the current guess for vel
