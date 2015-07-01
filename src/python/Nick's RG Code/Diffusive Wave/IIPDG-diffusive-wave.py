@@ -22,8 +22,8 @@ mesh  = UnitIntervalMesh(400)
 nu    = FacetNormal(mesh)
 h     = CellSize(mesh)
 h_avg = (h('+') + h('-'))/2.0
-V     = FunctionSpace(mesh, 'DG', 1)
-T  = 1.0
+V     = FunctionSpace(mesh, 'DG', 2)
+T  = 2.0
 dt = 0.01
 
 
@@ -34,14 +34,15 @@ class LeftBoundary(SubDomain):
 class RightBoundary(SubDomain):
     def inside(self, x, on_boundary):
         return x>1.-DOLFIN_EPS
+
 bc_left = DirichletBC(V, Constant(1.0), LeftBoundary(),'pointwise')
-bc_right = DirichletBC(V, Constant(0.0), RightBoundary(), 'pointwise')
+bc_right = DirichletBC(V, Constant(1.0e-3), RightBoundary(), 'pointwise')
 bcs = [bc_left, bc_right]
 
 # Define initial condition
 class fun(Expression):
     def eval(self, values, x):
-        values[0] = max(1.-2.*x[0],0)
+        values[0] = 1.0e-3  #max(1.-2.*x[0],0)
 
 
 # initial condition
@@ -52,10 +53,10 @@ u_old = interpolate(fun(),V)
 v     = TestFunction(V)
 u     = TrialFunction(V)
 
-alpha = 100.0
+alpha = 1000.0
 
 def q(u):
-  return u**8.
+  return (1.0e-5 + u**5.)
 
 a = dot(q(u)*grad(u), grad(v))*dx \
   - avg(dot(q(u)*grad(u),nu))*jump(v)*dS\
@@ -76,15 +77,15 @@ solver  = NonlinearVariationalSolver(problem)
 # Nonlinear solver parameters
 
 prm = solver.parameters
-prm['newton_solver']['absolute_tolerance'] = 1E-10
-prm['newton_solver']['relative_tolerance'] = 1E-9
-prm['newton_solver']['maximum_iterations'] = 30
-prm['newton_solver']['relaxation_parameter'] = 1.0
+prm['newton_solver']['absolute_tolerance'] = 1E-4
+prm['newton_solver']['relative_tolerance'] = 1E-5
+prm['newton_solver']['maximum_iterations'] = 1000
+prm['newton_solver']['relaxation_parameter'] = 0.05 # 0<r<1.0. If Newton doesn't converge set to smaller number 
 prm['newton_solver']['linear_solver'] = 'gmres'
 prm['newton_solver']['preconditioner'] = 'ilu'
-prm['newton_solver']['krylov_solver']['absolute_tolerance'] = 1E-9
-prm['newton_solver']['krylov_solver']['relative_tolerance'] = 1E-7
-prm['newton_solver']['krylov_solver']['maximum_iterations'] = 1000
+prm['newton_solver']['krylov_solver']['absolute_tolerance'] = 1E-3
+prm['newton_solver']['krylov_solver']['relative_tolerance'] = 1E-4
+prm['newton_solver']['krylov_solver']['maximum_iterations'] = 500
 prm['newton_solver']['krylov_solver']['gmres']['restart'] = 40
 prm['newton_solver']['krylov_solver']['preconditioner']['ilu']['fill_level'] = 0
 
