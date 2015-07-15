@@ -1,11 +1,18 @@
 """
-Using RG map to find traveling wave solutions to
-Fisher's equation with Dirichlet conditions:
-    u_t = u_xx + u*(1-u)(1+nu*u)
-    u(0) = 1, u(25) = 0 
-where nu in [-1,inf).
+Traveling wave RG applied to the
+Non-Linear diffusive wave problem:
+
+u_t - div(u^8 grad(u)) = 0,
+u(0,t) = 1
+u(1,t) = 0
+u(x,0) = max(1-2x,0)
+
+Method: IIPDG in space and
+backward Euler in time.
 """
+
 from dolfin import *
+from ShockWaveSpeed import *
 import numpy
 import matplotlib.pyplot as plt
 
@@ -17,9 +24,10 @@ set_log_level(30)
 parameters["reorder_dofs_serial"] = False
 
 # Create mesh and define function space
-x_l   = 0.
-x_r   = 1.
+x_l   = 0.0
+x_r   = 2
 mesh  = IntervalMesh(500,x_l,x_r)
+xvals = mesh.coordinates()
 nu    = FacetNormal(mesh)
 h     = CellSize(mesh)
 h_avg = (h('+') + h('-'))/2.0
@@ -104,26 +112,26 @@ while t <= T:
 # RG Section
 ####################################################
 
-b   = 0.20    # rg simulation time
+b   = 0.2    # rg simulation time
 dt  = 0.02    # time step
 
-velMax = 2.0   # search interval
-velMin = 0.5
+velMax = 3.   # search interval
+velMin = 1.
 vel = (velMax+velMin)/2. # initial guess for velocity
 
-f_a = -0.0932789012682 # delU for vel = 0.5 
-f_b = 0.269978117817   # delU for vel = 2.0
+f_a = -0.084  # delU for vel = 1 
+f_b = 0.312   # delU for vel = 3
 
 prm['newton_solver']['maximum_iterations'] = 10000
 prm['newton_solver']['relaxation_parameter'] = 0.005 # 0<r<1.0. If Newton doesn't converge set to smaller number 
 
 ## RG Loop ##
-for kk in xrange(0,50):
+for kk in xrange(0,25):
     
     # Create mesh and define function space
     # given the current guess for vel
     l        = b*vel                   # distance wave front moves
-    numUnits = 50.                     # num units we will shift 
+    numUnits = 75.                     # num units we will shift 
     delX     = l/numUnits              # new delta x   
     nx       = int(abs(x_r-x_l)/delX)           # num x steps
     mesh2    = IntervalMesh(nx,x_l,x_r)
@@ -174,6 +182,7 @@ for kk in xrange(0,50):
     # shift and assign values to IC
     utmp = interpolate(u_old, V1_CG)
     utmp = utmp.compute_vertex_values()
+    utmp2 = utmp
     utmp = numpy.append(utmp[(numUnits-1):-1],1.0e-3*numpy.ones((1,numUnits)))
     u_old = Function(V1_CG) 
     u_old.vector().set_local(utmp.ravel())
@@ -183,9 +192,14 @@ for kk in xrange(0,50):
     u_np1 = interpolate(u_old,V_CG)
     unp1_vals = u_np1.compute_vertex_values()
 
-    # compare solutions at x = 0.5
-    f_c = un_vals[250] - unp1_vals[250]
+    # get alpha
+    t0 = 1.
+    t1 = 1. + b
+    coeff = getAlpha(t0, un_vals, t1, utmp2, xvals)
+    z0,z1 = getShockFrontLocation(un_vals, unp1_vals, xvals)
 
+    # compare solutions at x = 0.5
+    f_c = z0-z1
     
     if (velMax-velMin)/2. < 1E-6:
         print 'Search interval within tolerance.'
@@ -201,11 +215,12 @@ for kk in xrange(0,50):
         vel = (velMax+velMin)/2.
 
     print kk + 1, vel
+    print "alpha:", coeff
 
 ###### output ######
 u_ics      = interpolate(fun(), V)
 u_ics_vals = u_ics.compute_vertex_values()
 
-plt.plot(numpy.linspace(0,1,len(u_ics_vals)),u_ics_vals, numpy.linspace(0,1,len(un_vals)),un_vals, numpy.linspace(0,1,len(unp1_vals)),unp1_vals, '-.')
+plt.plot(numpy.linspace(x_l,x_r,len(u_ics_vals)),u_ics_vals, numpy.linspace(x_l,x_r,len(unp1_vals)),unp1_vals, numpy.linspace(x_l,x_r,len(un_vals)),un_vals, '-.')
 plt.legend(['Initial Condition','RG Result','Pervious Iterate'])
 plt.show()
